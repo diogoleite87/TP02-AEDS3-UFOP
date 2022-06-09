@@ -11,7 +11,6 @@ class Grafo:
 
         self.professores = []
         self.num_disciplinas_professores = []
-        self.professores_preferencia = []
 
         self.disciplinas = []
         self.nome_disciplinas = []
@@ -19,8 +18,6 @@ class Grafo:
 
         self.dicionario_professores = {}
         self.dicionario_disciplinas = {}
-
-        self.nodes_dict = {}
 
         if lista_adj is None:
             self.list_adj = [[] for i in range(num_vert)]
@@ -86,7 +83,6 @@ class Grafo:
 
         self.num_arestas += 1
         if u < self.num_vert and v < self.num_vert:
-            # self.list_adj[u].append(v, (p, c))
             self.mat_adj[u][v] = [capacidade, peso]
         else:
             print("Aresta invalida!")
@@ -125,11 +121,10 @@ class Grafo:
             for j in range (len(self.dicionario_professores[i][2])) :
                 for k in range (len(self.disciplinas)) :
                     if self.dicionario_professores[i][2][j] == self.disciplinas[k]:
-                        # aux = self.dicionario_professores[i][2].index(self.dicionario_professores[i][2][j])
                         self.add_aresta(i + 1, k + 1 + len(self.professores), preferencia[j], 2)
                         break
 
-        # print(self.mat_adj)
+        print(self.mat_adj)
 
     def add_matriz_disciplinas(self):
 
@@ -148,11 +143,6 @@ class Grafo:
         # cria uma matriz preenchida com zeros
         self.mat_adj = [[0 for j in range(self.num_vert)]
                         for i in range(self.num_vert)]
-
-    def lista_adj(self):
-        print('\nCriando lista de adjacencias...')
-
-        self.list_adj = [[] for i in range(self.num_vert)]
 
     def cria_dicionario(self):
 
@@ -183,7 +173,6 @@ class Grafo:
         self.super_oferta()
         self.super_demanda()
         self.cria_dicionario()
-        self.lista_adj()
         self.matriz_adj()
         self.add_matriz_superOferta()
         self.add_matriz_professores()

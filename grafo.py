@@ -20,6 +20,8 @@ class Grafo:
         self.dicionario_professores = {}
         self.dicionario_disciplinas = {}
 
+        self.nodes_dict = {}
+
         if lista_adj is None:
             self.list_adj = [[] for i in range(num_vert)]
         else:
@@ -80,12 +82,12 @@ class Grafo:
         self.num_super_oferta = self.arqDisc['# Turmas'].sum()
         print('Super oferta:', + self.num_super_oferta)
 
-    def add_aresta(self, u, v, c = float('inf'), p = int):
+    def add_aresta(self, u, v, capacidade = float('inf'), peso = int):
 
         self.num_arestas += 1
         if u < self.num_vert and v < self.num_vert:
             # self.list_adj[u].append(v, (p, c))
-            self.mat_adj[u][v] = [p, c]
+            self.mat_adj[u][v] = [capacidade, peso]
         else:
             print("Aresta invalida!")
 
@@ -111,26 +113,9 @@ class Grafo:
         self.mat_adj[0][0] = 0
 
         for i in range (len(self.professores)):
-            self.add_aresta(0, i + 1, self.dicionario_professores[i][1], 0)
+            self.add_aresta(0, i + 1, 0, self.dicionario_professores[i][1])
 
-        print(self.mat_adj)
-
-    # def add_matriz_professores(self):
-
-    #     preferencia = [0, 3, 5, 8, 10]
-
-    #     for i, (_, totalTurmas, [*disciplinas]) in self.dicionario_professores.items():
-    #         max_turmas = 0
-    #         for j, (indexDisciplina, _, indexProfessor) in self.dicionario_disciplinas.items():
-    #             if max_turmas == len(disciplinas):
-    #                 break
-    #             if totalTurmas == 0:
-    #                 break
-    #             if indexDisciplina in disciplinas:
-    #                 self.add_aresta(i + 1, j + 1 + len(self.professores), indexProfessor, preferencia[])
-    #                 max_turmas += 1
-
-    #     print(self.mat_adj)
+        # print(self.mat_adj)
 
     def add_matriz_professores(self) :
 
@@ -138,17 +123,18 @@ class Grafo:
 
         for i in range (len(self.dicionario_professores)) :
             for j in range (len(self.dicionario_professores[i][2])) :
-                for k in range(len(self.dicionario_disciplinas)) :
-                    # indexDisciplina = self.di
-                    # print(indexDisciplina)
-                    self.add_aresta(i + 1, i + j + 1 + len(self.professores), i, preferencia[0])
+                for k in range (len(self.disciplinas)) :
+                    if self.dicionario_professores[i][2][j] == self.disciplinas[k]:
+                        # aux = self.dicionario_professores[i][2].index(self.dicionario_professores[i][2][j])
+                        self.add_aresta(i + 1, k + 1 + len(self.professores), preferencia[j], 2)
+                        break
 
-        print(self.mat_adj)
+        # print(self.mat_adj)
 
     def add_matriz_disciplinas(self):
 
         for i in range (len(self.disciplinas)):
-            self.add_aresta(i + 1 + len(self.professores), self.num_vert - 1, self.dicionario_disciplinas[i][2], 0)
+            self.add_aresta(i + 1 + len(self.professores), self.num_vert - 1, 0, self.dicionario_disciplinas[i][2])
 
         print('\n\n\n\n', self.mat_adj)
 
@@ -187,8 +173,10 @@ class Grafo:
 
         print(self.dicionario_disciplinas)
         print(self.dicionario_professores)
-
-
+    
+    def teste(self):
+        print('testee')
+        
     def iniciar(self):
         self.define_professores()
         self.define_disciplinas()
@@ -200,3 +188,4 @@ class Grafo:
         self.add_matriz_superOferta()
         self.add_matriz_professores()
         self.add_matriz_disciplinas()
+        self.teste()

@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Grafo:
 
     def __init__(self, num_vert=0, num_arestas=0, lista_adj=None, mat_adj=None):
@@ -79,7 +80,7 @@ class Grafo:
         self.num_super_oferta = self.arqDisc['# Turmas'].sum()
         print('Super oferta:', + self.num_super_oferta)
 
-    def add_aresta(self, u, v, capacidade = float('inf'), peso = int):
+    def add_aresta(self, u, v, capacidade=float('inf'), peso=int):
 
         self.num_arestas += 1
         if u < self.num_vert and v < self.num_vert:
@@ -101,35 +102,37 @@ class Grafo:
                 print("Aresta inexistente!")
         else:
             print("Aresta invalida!")
-    
+
     def add_matriz_superOferta(self):
 
         # adicionando inicialmente vertice de super demanda
         # self.add_aresta(0, 0, self.num_super_oferta, 0)
         self.mat_adj[0][0] = 0
 
-        for i in range (len(self.professores)):
+        for i in range(len(self.professores)):
             self.add_aresta(0, i + 1, 0, self.dicionario_professores[i][1])
 
         # print(self.mat_adj)
 
-    def add_matriz_professores(self) :
+    def add_matriz_professores(self):
 
         preferencia = [0, 3, 5, 8, 10]
 
-        for i in range (len(self.dicionario_professores)) :
-            for j in range (len(self.dicionario_professores[i][2])) :
-                for k in range (len(self.disciplinas)) :
+        for i in range(len(self.dicionario_professores)):
+            for j in range(len(self.dicionario_professores[i][2])):
+                for k in range(len(self.disciplinas)):
                     if self.dicionario_professores[i][2][j] == self.disciplinas[k]:
-                        self.add_aresta(i + 1, k + 1 + len(self.professores), preferencia[j], 2)
+                        self.add_aresta(
+                            i + 1, k + 1 + len(self.professores), preferencia[j], 2)
                         break
 
         print(self.mat_adj)
 
     def add_matriz_disciplinas(self):
 
-        for i in range (len(self.disciplinas)):
-            self.add_aresta(i + 1 + len(self.professores), self.num_vert - 1, 0, self.dicionario_disciplinas[i][2])
+        for i in range(len(self.disciplinas)):
+            self.add_aresta(i + 1 + len(self.professores),
+                            self.num_vert - 1, 0, self.dicionario_disciplinas[i][2])
 
         print('\n\n\n\n', self.mat_adj)
 
@@ -138,7 +141,8 @@ class Grafo:
 
         # 2 vertices adicionais que sao o super demanda e o super oferta
         # + len(numero de professores) vertices  e len(numero de turmas) vertices
-        self.num_vert = 2 + len(self.professores) + len(self.num_turmas_disciplinas)
+        self.num_vert = 2 + len(self.professores) + \
+            len(self.num_turmas_disciplinas)
 
         # cria uma matriz preenchida com zeros
         self.mat_adj = [[0 for j in range(self.num_vert)]
@@ -154,7 +158,7 @@ class Grafo:
 
         for i in range(len(self.professores)):
             self.dicionario_professores[i] = [self.professores[i], self.num_disciplinas_professores[i], [self.arqProf['Preferência 1'][i],
-            self.arqProf['Preferência 2'][i], self.arqProf['Preferência 3'][i], self.arqProf['Preferência 4'][i], self.arqProf['Preferência 5'][i]]]
+                                                                                                         self.arqProf['Preferência 2'][i], self.arqProf['Preferência 3'][i], self.arqProf['Preferência 4'][i], self.arqProf['Preferência 5'][i]]]
 
         # retirar os NaN da lista de preferencias dentro do dicionario
         for i in range(len(self.dicionario_professores)):
@@ -163,10 +167,60 @@ class Grafo:
 
         print(self.dicionario_disciplinas)
         print(self.dicionario_professores)
-    
+
     def teste(self):
         print('testee')
-        
+
+    def bellman_ford(self, s, t):
+        """Returns the shortest path from s to t through bellman-ford's algorithm (works for any graph)"""
+        dist = [float("inf") for _ in range(self.num_vert)]  # Distance from s
+        # Predecessor in shortest path from s
+        pred = [None for _ in range(self.num_vert)]
+        dist[s] = 0
+        for it in range(self.size_v):
+            updated = False
+            for (u, v, w) in self.edge_list:
+                if dist[v] > dist[u] + w:
+                    dist[v] = dist[u] + w
+                    pred[v] = u
+                    updated = True
+            if not updated:
+                return dist, pred
+        return dist, pred
+
+    def scm(G, E, w, c, b, s, t):
+
+        F = [[0 for i in range(len(G))] for i in range (len(G))]
+        C = self.bellman_ford(G, E, s, t)
+
+        while len(C) != 0 and b[s] != 0:
+            f = float('inf')
+            for i in range (1, len(C)):
+                u = C[i - 1]
+                v = C[i]
+                if c[u][v] < f:
+                    f = c[u][v]
+
+            for i in range (1, len(C)):
+                u = C[i - 1]
+                v = C[i]
+                F[u][v] += f
+                c[u][v] -= f
+                c[v][u] += f
+                b[s] -= f
+                b[t] += f
+
+                if c[u][v] == 0:
+                    G[u][v] = 0
+                    E.remove((u, v, w[u][v]))
+                if G[v][u] == 0:
+                    G[v][u] = 1
+                    E.append((v, u, -w[u][v]))
+                    w[v][u] - w[v][u]
+            C = self.bellman_ford(G, E, s, t)
+        return F
+
+
     def iniciar(self):
         self.define_professores()
         self.define_disciplinas()

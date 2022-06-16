@@ -139,16 +139,13 @@ class Grafo:
                         self.add_aresta(
                             i + 1, k + 1 + len(self.professores), 2, preferencia[j])
                         break
-
-        # print(self.mat_adj)
-
+                    
     def add_matriz_disciplinas(self):
 
         for i in range(len(self.disciplinas)):
             self.add_aresta(i + 1 + len(self.professores),
                             self.num_vert - 1, self.dicionario_disciplinas[i][2], 0)
 
-        # print('\n\n\n\n', self.mat_adj)
 
     def matriz_adj(self):
         print('\nCriando matriz adjacendias...')
@@ -187,49 +184,6 @@ class Grafo:
             self.dicionario_professores[i][2] = [
                 x for x in self.dicionario_professores[i][2] if pd.isnull(x) == False and x != 'nan']
 
-        # print(self.dicionario_disciplinas)
-        # print(self.dicionario_professores)
-
-
-    # def bellman_ford(self, s, t):
-
-    #     dist = [float("inf") for _ in range(self.num_vert)]  # Distance from s
-    #     # Predecessor in shortest path from s
-    #     pred = [None for _ in range(self.num_vert)]
-    #     dist[s] = 0
-
-    #     for it in range(self.num_vert):
-    #         updated = False
-    #         for (u, v, w, c) in self.arestas:
-    #             if dist[v] > dist[u] + w:
-    #                 dist[v] = dist[u] + w
-    #                 pred[v] = u
-    #                 updated = True
-
-    #         if updated == False:
-    #             break
-
-    #     # print(dist, pred)
-
-    #     caminho = [t]
-    #     i = pred[t]
-    #     while i in pred:
-    #         if i is None:
-    #             break
-    #         caminho.append(i)
-    #         i = pred[i]
-
-    #     # if it has no path from 's' to 'v'
-    #     # the shortest_path will have only the element [v]
-    #     if len(caminho) == 1:
-    #         caminho.clear()
-    #         return caminho
-
-    #     caminho.reverse()
-
-    #     print(caminho)
-
-    #     return caminho
 
     def bellman_ford(self, s, v):
 
@@ -263,9 +217,14 @@ class Grafo:
 
         caminho.reverse()
 
-        print(caminho)
-
         return caminho
+
+    def scm(self, s, t):
+
+        F = [[0 for i in range(len(self.mat_adj))] for j in range(len(self.mat_adj))]
+        C = self.bellman_ford(s, t)
+        print("teste shorts party")
+        print(C)
 
     def scm(self, s, t):
 
@@ -280,8 +239,8 @@ class Grafo:
             for i in range (1, len(C)):
                 u = C[i - 1]
                 v = C[i]
-                if self.mat_custo[u][v] < f:
-                    f = self.mat_custo[u][v]
+                if self.mat_cap[u][v] < f:
+                    f = self.mat_cap[u][v]
 
             for i in range (1, len(C)):
                 u = C[i - 1]
@@ -304,12 +263,10 @@ class Grafo:
                 if self.mat_adj[v][u] == 0:
                     self.mat_adj[v][u] = 1
                     self.arestas.append((v, u, -self.mat_custo[u][v]))
-                    self.mat_custo[v][u] = - (self.mat_custo[u][v])
+                    self.mat_custo[v][u] = -self.mat_custo[u][v]
 
             C = self.bellman_ford(s, t)
 
-        print("PORRA")
-        print(F)
         return F
 
     def criaListaB(self):

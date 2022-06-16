@@ -1,5 +1,5 @@
+from calendar import c
 import pandas as pd
-
 
 class Grafo:
 
@@ -19,6 +19,8 @@ class Grafo:
 
         self.dicionario_professores = {}
         self.dicionario_disciplinas = {}
+
+        self.mat_cap = []
 
         if lista_adj is None:
             self.list_adj = [[] for i in range(num_vert)]
@@ -85,6 +87,9 @@ class Grafo:
         self.num_arestas += 1
         if u < self.num_vert and v < self.num_vert:
             self.mat_adj[u][v] = [capacidade, peso]
+            self.mat_cap[u][v] = capacidade
+            self.mat_custo[u][v] = peso
+            self.list_adj[u].append((v, [capacidade, peso]))
         else:
             print("Aresta invalida!")
 
@@ -148,6 +153,14 @@ class Grafo:
         self.mat_adj = [[0 for j in range(self.num_vert)]
                         for i in range(self.num_vert)]
 
+        self.mat_cap = [[0 for j in range(self.num_vert)]
+                        for i in range(self.num_vert)]
+
+        self.mat_custo = [[0 for j in range(self.num_vert)]
+                        for i in range(self.num_vert)]
+
+        self.list_adj = [[] for i in range(self.num_vert)]
+
     def cria_dicionario(self):
 
         print('\nCriando dicionario...')
@@ -177,21 +190,35 @@ class Grafo:
         # Predecessor in shortest path from s
         pred = [None for _ in range(self.num_vert)]
         dist[s] = 0
-        for it in range(self.size_v):
+        for it in range(self.num_vert):
             updated = False
-            for (u, v, w) in self.edge_list:
-                if dist[v] > dist[u] + w:
-                    dist[v] = dist[u] + w
-                    pred[v] = u
-                    updated = True
+            # para cada u em matAdj
+            #    para cada v em matAdj
+            #        se matAdj[u][v] != 0
+            #            w = matAdj[u][v][?]
+
+            for u in range(len(self.mat_adj[u])):
+                for v in range(len(self.mat_adj[u][v])) :
+                    if self.mat_adj[u][v] != 0:
+                        w = self.mat_adj[u][v][1]
+                        if dist[v] > dist[u] + w:
+                            dist[v] = dist[u] + w
+                            pred[v] = u
+                            updated = True
+
+            # for (u, v, w) in self.edge_list:
+            #     if dist[v] > dist[u] + w:
+            #         dist[v] = dist[u] + w
+            #         pred[v] = u
+            #         updated = True
             if not updated:
                 return dist, pred
         return dist, pred
 
-    def scm(G, E, w, c, b, s, t):
+    def scm(self, w, c, b, s, t):
 
-        F = [[0 for i in range(len(G))] for i in range (len(G))]
-        C = self.bellman_ford(G, E, s, t)
+        F = [[0 for i in range(len(self.num_vert))] for j in range(len(self.num_vert))]
+        C = self.bellman_ford(s, t)
 
         while len(C) != 0 and b[s] != 0:
             f = float('inf')
@@ -211,13 +238,13 @@ class Grafo:
                 b[t] += f
 
                 if c[u][v] == 0:
-                    G[u][v] = 0
-                    E.remove((u, v, w[u][v]))
-                if G[v][u] == 0:
-                    G[v][u] = 1
-                    E.append((v, u, -w[u][v]))
+                    self.mat_adj[u][v] = 0
+                    # E.remove((u, v, w[u][v]))
+                if self.mat_adj[v][u] == 0:
+                    self.mat_adj[v][u] = 1
+                    # E.append((v, u, -w[u][v]))
                     w[v][u] - w[v][u]
-            C = self.bellman_ford(G, E, s, t)
+            C = self.bellman_ford(s, t)
         return F
 
 
@@ -231,4 +258,5 @@ class Grafo:
         self.add_matriz_superOferta()
         self.add_matriz_professores()
         self.add_matriz_disciplinas()
+        # self.scm(0, 0, 0, 0, self.num_vert - 1)
         self.teste()

@@ -1,12 +1,12 @@
-from calendar import c
+from turtle import right
 import pandas as pd
 
 class Grafo:
 
-    def __init__(self, num_vert=0, num_arestas=0, lista_adj=None, mat_adj=None):
+    def __init__(self, num_vert=0, num_arestas=0, lista_adj=None, mat_adj=None, arestas = None, ofertas = None):
         self.num_vert = num_vert
         self.num_arestas = num_arestas
-
+        self.list_b = []
         self.num_super_oferta = 0
         self.num_super_demanda = 0
 
@@ -22,6 +22,14 @@ class Grafo:
 
         self.mat_cap = []
 
+        if ofertas is None:
+            self.ofertas = [[] for i in range(num_vert)]
+        else:
+            self.ofertas=ofertas
+        if arestas is None:
+            self.arestas = [[] for _ in range(num_vert)]
+        else:
+            self.arestas=arestas
         if lista_adj is None:
             self.list_adj = [[] for i in range(num_vert)]
         else:
@@ -75,21 +83,22 @@ class Grafo:
         print(self.num_turmas_disciplinas)
 
     def super_demanda(self):
-        self.num_super_demanda = self.arqDisc['# Turmas'].sum()
-        print('Super demanda:', + self.num_super_demanda)
+        self.num_super_demanda = - self.arqDisc['# Turmas'].sum()
+        print('Super demanda:',  self.num_super_demanda)
 
     def super_oferta(self):
         self.num_super_oferta = self.arqDisc['# Turmas'].sum()
         print('Super oferta:', + self.num_super_oferta)
 
-    def add_aresta(self, u, v, capacidade=float('inf'), peso=int):
+    def add_aresta(self, u, v, capacidade = float('inf'), peso = 0):
 
-        self.num_arestas += 1
         if u < self.num_vert and v < self.num_vert:
-            self.mat_adj[u][v] = [capacidade, peso]
+            self.mat_adj[u][v] = [peso, capacidade]
             self.mat_cap[u][v] = capacidade
             self.mat_custo[u][v] = peso
-            self.list_adj[u].append((v, [capacidade, peso]))
+            self.list_adj[u].append((v, [peso, capacidade]))
+            self.arestas.append((u, v, peso))
+            self.num_arestas += 1
         else:
             print("Aresta invalida!")
 
@@ -115,7 +124,7 @@ class Grafo:
         self.mat_adj[0][0] = 0
 
         for i in range(len(self.professores)):
-            self.add_aresta(0, i + 1, 0, self.dicionario_professores[i][1])
+            self.add_aresta(0, i + 1, self.dicionario_professores[i][1], 0)
 
         # print(self.mat_adj)
 
@@ -128,18 +137,18 @@ class Grafo:
                 for k in range(len(self.disciplinas)):
                     if self.dicionario_professores[i][2][j] == self.disciplinas[k]:
                         self.add_aresta(
-                            i + 1, k + 1 + len(self.professores), preferencia[j], 2)
+                            i + 1, k + 1 + len(self.professores), 2, preferencia[j])
                         break
 
-        print(self.mat_adj)
+        # print(self.mat_adj)
 
     def add_matriz_disciplinas(self):
 
         for i in range(len(self.disciplinas)):
             self.add_aresta(i + 1 + len(self.professores),
-                            self.num_vert - 1, 0, self.dicionario_disciplinas[i][2])
+                            self.num_vert - 1, self.dicionario_disciplinas[i][2], 0)
 
-        print('\n\n\n\n', self.mat_adj)
+        # print('\n\n\n\n', self.mat_adj)
 
     def matriz_adj(self):
         print('\nCriando matriz adjacendias...')
@@ -178,75 +187,143 @@ class Grafo:
             self.dicionario_professores[i][2] = [
                 x for x in self.dicionario_professores[i][2] if pd.isnull(x) == False and x != 'nan']
 
-        print(self.dicionario_disciplinas)
-        print(self.dicionario_professores)
+        # print(self.dicionario_disciplinas)
+        # print(self.dicionario_professores)
 
-    def teste(self):
-        print('testee')
 
-    def bellman_ford(self, s, t):
-        """Returns the shortest path from s to t through bellman-ford's algorithm (works for any graph)"""
-        dist = [float("inf") for _ in range(self.num_vert)]  # Distance from s
-        # Predecessor in shortest path from s
-        pred = [None for _ in range(self.num_vert)]
+    # def bellman_ford(self, s, t):
+
+    #     dist = [float("inf") for _ in range(self.num_vert)]  # Distance from s
+    #     # Predecessor in shortest path from s
+    #     pred = [None for _ in range(self.num_vert)]
+    #     dist[s] = 0
+
+    #     for it in range(self.num_vert):
+    #         updated = False
+    #         for (u, v, w, c) in self.arestas:
+    #             if dist[v] > dist[u] + w:
+    #                 dist[v] = dist[u] + w
+    #                 pred[v] = u
+    #                 updated = True
+
+    #         if updated == False:
+    #             break
+
+    #     # print(dist, pred)
+
+    #     caminho = [t]
+    #     i = pred[t]
+    #     while i in pred:
+    #         if i is None:
+    #             break
+    #         caminho.append(i)
+    #         i = pred[i]
+
+    #     # if it has no path from 's' to 'v'
+    #     # the shortest_path will have only the element [v]
+    #     if len(caminho) == 1:
+    #         caminho.clear()
+    #         return caminho
+
+    #     caminho.reverse()
+
+    #     print(caminho)
+
+    #     return caminho
+
+    def bellman_ford(self, s, v):
+
+        dist = [float("inf") for _ in range(len(self.list_adj))]
+        pred = [None for _ in range(len(self.list_adj))]
+
         dist[s] = 0
-        for it in range(self.num_vert):
-            updated = False
-            # para cada u em matAdj
-            #    para cada v em matAdj
-            #        se matAdj[u][v] != 0
-            #            w = matAdj[u][v][?]
 
-            for u in range(len(self.mat_adj[u])):
-                for v in range(len(self.mat_adj[u][v])) :
-                    if self.mat_adj[u][v] != 0:
-                        w = self.mat_adj[u][v][1]
-                        if dist[v] > dist[u] + w:
-                            dist[v] = dist[u] + w
-                            pred[v] = u
-                            updated = True
+        for i in range(0, len(self.list_adj) - 1):
+            trade = False
+            for origem, destino, peso in self.arestas: 
+                if dist[destino] > dist[origem] + peso:
+                    dist[destino] = dist[origem] + peso
+                    pred[destino] = origem
+                    trade = True
 
-            # for (u, v, w) in self.edge_list:
-            #     if dist[v] > dist[u] + w:
-            #         dist[v] = dist[u] + w
-            #         pred[v] = u
-            #         updated = True
-            if not updated:
-                return dist, pred
-        return dist, pred
+            if trade is False:
+                break
 
-    def scm(self, w, c, b, s, t):
+        caminho = [v]
+        i = pred[v]
+        while i in pred:
+            if i is None:
+                break
+            caminho.append(i)
+            i = pred[i]
 
-        F = [[0 for i in range(len(self.num_vert))] for j in range(len(self.num_vert))]
+        if len(caminho) == 1:
+            caminho.clear()
+            return caminho
+
+        caminho.reverse()
+
+        print(caminho)
+
+        return caminho
+
+    def scm(self, s, t):
+
+        F = [[0 for i in range(len(self.mat_adj))] for j in range(len(self.mat_adj))]
         C = self.bellman_ford(s, t)
+        print("teste shorts party")
+        print(C)
 
-        while len(C) != 0 and b[s] != 0:
+        while len(C) != 0 and self.list_b[s] != 0:
+            print("opa")
             f = float('inf')
             for i in range (1, len(C)):
                 u = C[i - 1]
                 v = C[i]
-                if c[u][v] < f:
-                    f = c[u][v]
+                if self.mat_custo[u][v] < f:
+                    f = self.mat_custo[u][v]
 
             for i in range (1, len(C)):
                 u = C[i - 1]
                 v = C[i]
                 F[u][v] += f
-                c[u][v] -= f
-                c[v][u] += f
-                b[s] -= f
-                b[t] += f
+                self.mat_cap[u][v] -= f
+                self.mat_cap[v][u] += f
 
-                if c[u][v] == 0:
+                self.list_b[s] -= f
+                self.list_b[t] += f
+
+                if self.mat_cap[u][v] == 0:
                     self.mat_adj[u][v] = 0
-                    # E.remove((u, v, w[u][v]))
+                    print("\nu:", u)
+                    print("v: ", v)
+                    print("mat:", self.mat_custo[u][v])
+                    print("mat", self.mat_cap[u][v])
+                    self.arestas.remove((u, v, self.mat_custo[u][v]))
+
                 if self.mat_adj[v][u] == 0:
                     self.mat_adj[v][u] = 1
-                    # E.append((v, u, -w[u][v]))
-                    w[v][u] - w[v][u]
+                    self.arestas.append((v, u, -self.mat_custo[u][v]))
+                    self.mat_custo[v][u] = - (self.mat_custo[u][v])
+
             C = self.bellman_ford(s, t)
+
+        print("PORRA")
+        print(F)
         return F
 
+    def criaListaB(self):
+        self.list_b.append((self.num_super_oferta))
+
+        for i in range(len(self.num_disciplinas_professores)):
+            self.list_b.append((self.num_disciplinas_professores[i]))
+
+        for i in range(len(self.nome_disciplinas)):
+            self.list_b.append((0))
+
+        self.list_b.append((self.num_super_demanda))
+
+        print(self.list_b)
 
     def iniciar(self):
         self.define_professores()
@@ -258,5 +335,7 @@ class Grafo:
         self.add_matriz_superOferta()
         self.add_matriz_professores()
         self.add_matriz_disciplinas()
-        # self.scm(0, 0, 0, 0, self.num_vert - 1)
-        self.teste()
+        self.criaListaB()
+        # self.bellman_ford(0, self.num_vert-1)
+        self.scm(0, self.num_vert - 1)
+        # self.teste()

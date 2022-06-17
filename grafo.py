@@ -260,6 +260,7 @@ class Grafo:
                     self.arestas.append((v, u, -self.mat_custo[u][v]))
                     self.mat_custo[v][u] = -self.mat_custo[u][v]
 
+                # fluxo reverso
                 if self.mat_final[v][u] != 0:
                     self.mat_final[v][u] = self.mat_final[v][u] - f
 

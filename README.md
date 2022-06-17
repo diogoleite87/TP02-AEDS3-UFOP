@@ -25,3 +25,6 @@
 
 <h1>Complemento</h1>
 <h3>Para acessar o arquivo PDF do trabalho <a href="">CLIQUE AQUI.</a></h3>
+
+<h1>Agradecimentos</h1>
+<h3>Queremos agradecer ao nosso professor George pelo empenho e sua gigantesca vontade de ensinar, a disciplina em questão foi de grande valia, bastante aprendizagem e com ensinamentos que vamos levar pra vida toda. Nunca vamos esquecer você George, professor excelente e muito, mas muito gente boa. Muito Obrigado George, vamos sentir sua falta! Até a proxima...</h3>

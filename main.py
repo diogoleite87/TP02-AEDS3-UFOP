@@ -9,5 +9,4 @@ if aux == 1 :
 else :
     grafo.ler_arquivo_csv('professores.csv', 'disciplinas.csv')
 
-
 grafo.iniciar()

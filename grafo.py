@@ -185,14 +185,14 @@ class Grafo:
         dist[s] = 0
 
         for i in range(0, len(self.list_adj) - 1):
-            trade = False
+            update = False
             for origem, destino, peso in self.arestas: 
                 if dist[destino] > dist[origem] + peso:
                     dist[destino] = dist[origem] + peso
                     pred[destino] = origem
-                    trade = True
+                    update = True
 
-            if trade is False:
+            if update is False:
                 break
 
         caminho = [v]
@@ -249,13 +249,18 @@ class Grafo:
 
     def imprimeAlocacao(self):
 
+        preferencia = [0, 3, 5, 8, 10]
+
         print("{:<20} {:<20} {:<40} {:<40} {:<40}".format('Professor', 'Disciplina', 'Nome', 'Classes', 'Custo'))
         for i in range(len(self.professores)):
             for k in range(len(self.mat_final[i]) - 2 - len(self.professores)):
                 if self.mat_final[i + 1][k + 1 + len(self.professores)] != 0:
-                    print("{:<20} {:<20} {:<40} {:<40}".format(self.professores[i], self.disciplinas[k], self.nome_disciplinas[k], self.mat_final[i + 1][k + 1 + len(self.professores)]))
+                    for y in range(len(self.dicionario_professores[i][2])):
+                        if self.dicionario_professores[i][2][y] == self.disciplinas[k]:
+                            aux = preferencia[y] * (self.mat_final[i + 1][k + 1 + len(self.professores)])
+                            break
 
-
+                    print("{:<20} {:<20} {:<40} {:<40} {:<40}".format(self.professores[i], self.disciplinas[k], self.nome_disciplinas[k], self.mat_final[i + 1][k + 1 + len(self.professores)], aux))
 
     def iniciar(self):
         self.define_professores()

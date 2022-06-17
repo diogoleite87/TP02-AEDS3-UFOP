@@ -21,6 +21,8 @@ class Grafo:
         self.dicionario_professores = {}
         self.dicionario_disciplinas = {}
 
+        self.list_semAlocacao = []
+
         if ofertas is None:
             self.ofertas = [[] for i in range(num_vert)]
         else:
@@ -279,6 +281,9 @@ class Grafo:
         print("{:<20} {:<20} {:<40} {:<40} {:<40}".format(
             'Professor', 'Disciplina', 'Nome', 'Classes', 'Custo'))
         for i in range(len(self.professores)):
+            if self.dicionario_professores[i][1] == 0 :
+                self.list_semAlocacao.append(self.dicionario_professores[i][0])
+
             for k in range(len(self.mat_final[i]) - 2 - len(self.professores)):
                 if self.mat_final[i + 1][k + 1 + len(self.professores)] != 0:
                     for y in range(len(self.dicionario_professores[i][2])):
@@ -291,6 +296,12 @@ class Grafo:
 
                     print("{:<20} {:<20} {:<40} {:<40} {:<40}".format(
                         self.professores[i], self.disciplinas[k], self.nome_disciplinas[k], self.mat_final[i + 1][k + 1 + len(self.professores)], aux))
+        
+        # retorna professores que nao obteram alocações
+        if self.list_semAlocacao != []:
+            print("\nLista de professores sem alocação: ", self.list_semAlocacao)
+        else: 
+            print("\nTodos os professores foram alocados em alguma disciplina.")
 
     def iniciar(self):
 

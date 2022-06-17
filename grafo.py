@@ -121,9 +121,14 @@ class Grafo:
             for j in range(len(self.dicionario_professores[i][2])):
                 for k in range(len(self.disciplinas)):
                     if self.dicionario_professores[i][2][j] == self.disciplinas[k]:
-                        self.add_aresta(
-                            i + 1, k + 1 + len(self.professores), 2, preferencia[j])
-                        break
+
+                        if self.disciplinas[k] == "CSI000":
+                            self.add_aresta(i + 1, k + 1 + len(self.professores), 1, preferencia[j])
+                            break
+                        else:
+                            self.add_aresta(
+                                i + 1, k + 1 + len(self.professores), 2, preferencia[j])
+                            break
 
     def add_matriz_disciplinas(self):
 
@@ -160,7 +165,6 @@ class Grafo:
         for i in range(len(self.professores)):
             self.dicionario_professores[i] = [self.professores[i], self.num_disciplinas_professores[i], [self.arqProf['Preferência 1'][i],
                                                                                                          self.arqProf['Preferência 2'][i], self.arqProf['Preferência 3'][i], self.arqProf['Preferência 4'][i], self.arqProf['Preferência 5'][i]]]
-
         # retirar os NaN da lista de preferencias dentro do dicionario
         for i in range(len(self.dicionario_professores)):
             self.dicionario_professores[i][2] = [

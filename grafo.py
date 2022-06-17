@@ -42,8 +42,6 @@ class Grafo:
 
     def ler_arquivo_csv(self, professores_CSV, disciplinas_CSV):
 
-        print("Lendo arquivo...")
-
         try:
             self.arqProf = pd.read_csv(
                 'data/' + professores_CSV, sep=';', encoding='utf-8')
@@ -54,7 +52,6 @@ class Grafo:
             print('Erro ao abrir o arquivo!')
 
     def define_professores(self):
-        print('\nPreenchendo dados dos professores...')
 
         for i in range(len(self.arqProf['Professor'])):
             self.professores.append(self.arqProf['Professor'][i])
@@ -63,11 +60,7 @@ class Grafo:
             self.num_disciplinas_professores.append(
                 self.arqProf['# Disciplinas'][i])
 
-        print(self.professores)
-        print(self.num_disciplinas_professores)
-
     def define_disciplinas(self):
-        print('\nPreenchendo dados das disciplinas ofertadas...')
 
         for i in range(len(self.arqDisc['Disciplina'])):
             self.disciplinas.append(self.arqDisc['Disciplina'][i])
@@ -78,17 +71,11 @@ class Grafo:
         for i in range(len(self.arqDisc['# Turmas'])):
             self.num_turmas_disciplinas.append(self.arqDisc['# Turmas'][i])
 
-        print(self.disciplinas)
-        print(self.nome_disciplinas)
-        print(self.num_turmas_disciplinas)
-
     def super_demanda(self):
         self.num_super_demanda = - self.arqDisc['# Turmas'].sum()
-        print('Super demanda:',  self.num_super_demanda)
 
     def super_oferta(self):
         self.num_super_oferta = self.arqDisc['# Turmas'].sum()
-        print('Super oferta:', + self.num_super_oferta)
 
     def add_aresta(self, u, v, capacidade = float('inf'), peso = 0):
 
@@ -126,8 +113,6 @@ class Grafo:
         for i in range(len(self.professores)):
             self.add_aresta(0, i + 1, self.dicionario_professores[i][1], 0)
 
-        # print(self.mat_adj)
-
     def add_matriz_professores(self):
 
         preferencia = [0, 3, 5, 8, 10]
@@ -139,7 +124,7 @@ class Grafo:
                         self.add_aresta(
                             i + 1, k + 1 + len(self.professores), 2, preferencia[j])
                         break
-                    
+
     def add_matriz_disciplinas(self):
 
         for i in range(len(self.disciplinas)):
@@ -148,7 +133,6 @@ class Grafo:
 
 
     def matriz_adj(self):
-        print('\nCriando matriz adjacendias...')
 
         # 2 vertices adicionais que sao o super demanda e o super oferta
         # + len(numero de professores) vertices  e len(numero de turmas) vertices
@@ -169,8 +153,6 @@ class Grafo:
 
     def cria_dicionario(self):
 
-        print('\nCriando dicionario...')
-
         for i in range(len(self.disciplinas)):
             self.dicionario_disciplinas[i] = [
                 self.disciplinas[i], self.nome_disciplinas[i], self.num_turmas_disciplinas[i]]
@@ -184,6 +166,16 @@ class Grafo:
             self.dicionario_professores[i][2] = [
                 x for x in self.dicionario_professores[i][2] if pd.isnull(x) == False and x != 'nan']
 
+    def criaListaB(self):
+        self.list_b.append((self.num_super_oferta))
+
+        for i in range(len(self.num_disciplinas_professores)):
+            self.list_b.append((self.num_disciplinas_professores[i]))
+
+        for i in range(len(self.nome_disciplinas)):
+            self.list_b.append((0))
+
+        self.list_b.append((self.num_super_demanda))
 
     def bellman_ford(self, s, v):
 
@@ -221,20 +213,11 @@ class Grafo:
 
     def scm(self, s, t):
 
-        F = [[0 for i in range(len(self.mat_adj))] for j in range(len(self.mat_adj))]
+        self.mat_final = [[0 for i in range(len(self.mat_adj))] for j in range(len(self.mat_adj))]
         C = self.bellman_ford(s, t)
-        print("teste shorts party")
-        print(C)
-
-    def scm(self, s, t):
-
-        F = [[0 for i in range(len(self.mat_adj))] for j in range(len(self.mat_adj))]
-        C = self.bellman_ford(s, t)
-        print("teste shorts party")
-        print(C)
 
         while len(C) != 0 and self.list_b[s] != 0:
-            print("opa")
+
             f = float('inf')
             for i in range (1, len(C)):
                 u = C[i - 1]
@@ -245,19 +228,12 @@ class Grafo:
             for i in range (1, len(C)):
                 u = C[i - 1]
                 v = C[i]
-                F[u][v] += f
+                self.mat_final[u][v] += f
                 self.mat_cap[u][v] -= f
                 self.mat_cap[v][u] += f
 
-                self.list_b[s] -= f
-                self.list_b[t] += f
-
                 if self.mat_cap[u][v] == 0:
                     self.mat_adj[u][v] = 0
-                    print("\nu:", u)
-                    print("v: ", v)
-                    print("mat:", self.mat_custo[u][v])
-                    print("mat", self.mat_cap[u][v])
                     self.arestas.remove((u, v, self.mat_custo[u][v]))
 
                 if self.mat_adj[v][u] == 0:
@@ -265,22 +241,21 @@ class Grafo:
                     self.arestas.append((v, u, -self.mat_custo[u][v]))
                     self.mat_custo[v][u] = -self.mat_custo[u][v]
 
+            self.list_b[s] -= f
+            self.list_b[t] += f
             C = self.bellman_ford(s, t)
 
-        return F
+        return self.mat_final
 
-    def criaListaB(self):
-        self.list_b.append((self.num_super_oferta))
+    def imprimeAlocacao(self):
 
-        for i in range(len(self.num_disciplinas_professores)):
-            self.list_b.append((self.num_disciplinas_professores[i]))
+        print("{:<20} {:<20} {:<40} {:<40} {:<40}".format('Professor', 'Disciplina', 'Nome', 'Classes', 'Custo'))
+        for i in range(len(self.professores)):
+            for k in range(len(self.mat_final[i]) - 2 - len(self.professores)):
+                if self.mat_final[i + 1][k + 1 + len(self.professores)] != 0:
+                    print("{:<20} {:<20} {:<40} {:<40}".format(self.professores[i], self.disciplinas[k], self.nome_disciplinas[k], self.mat_final[i + 1][k + 1 + len(self.professores)]))
 
-        for i in range(len(self.nome_disciplinas)):
-            self.list_b.append((0))
 
-        self.list_b.append((self.num_super_demanda))
-
-        print(self.list_b)
 
     def iniciar(self):
         self.define_professores()
@@ -293,6 +268,5 @@ class Grafo:
         self.add_matriz_professores()
         self.add_matriz_disciplinas()
         self.criaListaB()
-        # self.bellman_ford(0, self.num_vert-1)
         self.scm(0, self.num_vert - 1)
-        # self.teste()
+        self.imprimeAlocacao()
